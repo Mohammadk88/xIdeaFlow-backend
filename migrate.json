@@ -1,0 +1,6 @@
+{
+  "name": "migrate",
+  "scripts": {
+    "migrate": "npx prisma migrate dev --name init"
+  }
+}

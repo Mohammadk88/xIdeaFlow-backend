@@ -1,0 +1,288 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum PlanType {
+  FREE
+  PAYG
+  SUBSCRIPTION
+  LIFETIME
+}
+
+enum UsagePeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum CreditActionType {
+  GENERATE_POST
+  GENERATE_IMAGE
+  GENERATE_EMAIL
+  GENERATE_HOOK
+  SCHEDULE_POST
+  USE_PROMPT_TEMPLATE
+  GENERATE_PROMPT_TEMPLATE
+  GENERATE_AD_COPY
+  GENERATE_HEADLINE
+  GENERATE_VOICE_SCRIPT
+}
+
+enum TransactionType {
+  PURCHASE
+  GIFT
+  BONUS
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Core Models
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userCredit       UserCredit?
+  subscriptions    UserSubscription[]
+  creditTransactions CreditTransaction[]
+  creditUsageLogs  CreditUsageLog[]
+  serviceUsage     UserServiceUsage[]
+  bonusCreditEvents BonusCreditEvent[]
+  promptTemplates  PromptTemplate[]
+  savedPrompts     SavedPrompt[]
+  scheduledContent ScheduledContent[]
+
+  @@map("users")
+}
+
+model UserCredit {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  totalCredits Int      @default(0)
+  usedCredits  Int      @default(0)
+  planType     PlanType @default(FREE)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_credits")
+}
+
+model CreditTransaction {
+  id          String            @id @default(cuid())
+  userId      String
+  type        TransactionType
+  amount      Int
+  status      TransactionStatus @default(PENDING)
+  paddlePaymentId String?
+  paddleCheckoutId String?
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("credit_transactions")
+}
+
+model CreditUsageLog {
+  id          String           @id @default(cuid())
+  userId      String
+  serviceId   String
+  action      CreditActionType
+  cost        Int
+  result      String?          // JSON string with generation result metadata
+  success     Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@map("credit_usage_logs")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "content_generation"
+  title       String   // e.g., "Content Generation"
+  description String
+  icon        String?
+  isActive    Boolean  @default(true)
+  creditCost  Int      @default(1) // Base cost in credits
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  planServices    PlanService[]
+  usageLogs       CreditUsageLog[]
+  userServiceUsage UserServiceUsage[]
+
+  @@map("services")
+}
+
+model SubscriptionPlan {
+  id            String   @id @default(cuid())
+  name          String   @unique // e.g., "Free", "Pro", "Business"
+  title         String   // Display name
+  description   String?
+  price         Int      @default(0) // Price in cents
+  durationDays  Int      @default(30)
+  isRecurring   Boolean  @default(false)
+  paddlePlanId String?  @unique
+  isActive      Boolean  @default(true)
+  creditsIncluded Int    @default(0) // Monthly credits included
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  planServices     PlanService[]
+  userSubscriptions UserSubscription[]
+
+  @@map("subscription_plans")
+}
+
+model PlanService {
+  id          String      @id @default(cuid())
+  planId      String
+  serviceId   String
+  usageLimit  Int         @default(-1) // -1 means unlimited
+  usagePeriod UsagePeriod @default(MONTHLY)
+  createdAt   DateTime    @default(now())
+
+  // Relations
+  plan    SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  service Service          @relation(fields: [serviceId], references: [id])
+
+  @@unique([planId, serviceId])
+  @@map("plan_services")
+}
+
+model UserSubscription {
+  id          String   @id @default(cuid())
+  userId      String
+  planId      String
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  autoRenew   Boolean  @default(true)
+  isActive    Boolean  @default(true)
+  paddleSubscriptionId String? @unique
+  paddleCustomerId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@map("user_subscriptions")
+}
+
+model UserServiceUsage {
+  id          String      @id @default(cuid())
+  userId      String
+  serviceId   String
+  usageCount  Int         @default(0)
+  period      String      // "2024-01" for monthly, "2024-W01" for weekly, "2024-01-01" for daily
+  usagePeriod UsagePeriod
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@unique([userId, serviceId, period, usagePeriod])
+  @@map("user_service_usage")
+}
+
+model BonusCreditEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  event       String   // "signup", "referral", "promotion", etc.
+  credits     Int
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bonus_credit_events")
+}
+
+model PromptTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   // "social_media", "email", "advertising", etc.
+  prompt      String   @db.Text
+  variables   String?  @db.Text // JSON array of variable names
+  isPublic    Boolean  @default(true)
+  createdBy   String?  // User ID of creator, null for admin templates
+  tags        String?  // Comma-separated tags
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  creator User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  savedPrompts SavedPrompt[]
+
+  @@map("prompt_templates")
+}
+
+model SavedPrompt {
+  id         String   @id @default(cuid())
+  userId     String
+  templateId String
+  customName String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template PromptTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, templateId])
+  @@map("saved_prompts")
+}
+
+model ScheduledContent {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  content     String   @db.Text
+  platform    String   // "twitter", "facebook", "instagram", "linkedin"
+  scheduledAt DateTime
+  status      String   @default("pending") // "pending", "published", "failed", "cancelled"
+  mediaUrls   String?  @db.Text // JSON array of media URLs
+  metadata    String?  @db.Text // JSON with additional platform-specific data
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("scheduled_content")
+}
