@@ -30,7 +30,9 @@ export class VoiceScriptWriterController {
 
   @Post('generate')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Generate professional voice scripts for various media' })
+  @ApiOperation({
+    summary: 'Generate professional voice scripts for various media',
+  })
   @ApiResponse({
     status: 200,
     description: 'Voice script generated successfully',

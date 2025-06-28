@@ -143,7 +143,10 @@ export class ContentSchedulerController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Scheduled content deleted successfully' },
+        message: {
+          type: 'string',
+          example: 'Scheduled content deleted successfully',
+        },
       },
     },
   })

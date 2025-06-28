@@ -11,6 +11,12 @@ export interface AuthenticatedUser {
   name: string;
 }
 
+export interface RefreshTokenUser {
+  id: string;
+  email: string;
+  refreshToken: string;
+}
+
 export interface UserWithCredits extends AuthenticatedUser {
   userCredit?: {
     totalCredits: number;

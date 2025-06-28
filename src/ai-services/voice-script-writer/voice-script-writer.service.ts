@@ -9,7 +9,6 @@ import {
   ScriptSectionDto,
   ScriptType,
   VoiceStyle,
-  ScriptLength,
 } from './dto/voice-script-writer.dto';
 
 @Injectable()
@@ -84,10 +83,15 @@ export class VoiceScriptWriterService {
     };
   }
 
-  private generateMockVoiceScript(dto: GenerateVoiceScriptDto): Omit<VoiceScriptResponseDto, 'creditsUsed' | 'success' | 'message'> {
+  private generateMockVoiceScript(
+    dto: GenerateVoiceScriptDto,
+  ): Omit<VoiceScriptResponseDto, 'creditsUsed' | 'success' | 'message'> {
     const sections = this.createScriptSections(dto);
-    const fullScript = sections.map(section => section.content).join('\n\n');
-    const totalDuration = sections.reduce((total, section) => total + section.duration, 0);
+    const fullScript = sections.map((section) => section.content).join('\n\n');
+    const totalDuration = sections.reduce(
+      (total, section) => total + section.duration,
+      0,
+    );
     const wordCount = this.countWords(fullScript);
 
     return {
@@ -102,25 +106,30 @@ export class VoiceScriptWriterService {
     };
   }
 
-  private createScriptSections(dto: GenerateVoiceScriptDto): ScriptSectionDto[] {
+  private createScriptSections(
+    dto: GenerateVoiceScriptDto,
+  ): ScriptSectionDto[] {
     const sections: ScriptSectionDto[] = [];
     const readingSpeed = dto.readingSpeed || 150; // words per minute
-    
+
     // Introduction section
     sections.push(this.createIntroSection(dto, readingSpeed));
-    
+
     // Main content sections based on key points
     dto.keyPoints.forEach((point, index) => {
       sections.push(this.createContentSection(point, dto, index, readingSpeed));
     });
-    
+
     // Conclusion section
     sections.push(this.createConclusionSection(dto, readingSpeed));
-    
+
     return sections;
   }
 
-  private createIntroSection(dto: GenerateVoiceScriptDto, readingSpeed: number): ScriptSectionDto {
+  private createIntroSection(
+    dto: GenerateVoiceScriptDto,
+    readingSpeed: number,
+  ): ScriptSectionDto {
     const introTexts = {
       [ScriptType.PODCAST]: `Welcome to today's episode! I'm excited to talk with you about ${dto.topic}.`,
       [ScriptType.VOICEOVER]: `In this presentation, we'll explore ${dto.topic} and its impact on ${dto.audience}.`,
@@ -130,7 +139,9 @@ export class VoiceScriptWriterService {
       [ScriptType.TRAINING]: `Welcome to this training session on ${dto.topic}. By the end, you'll have a clear understanding of the key concepts.`,
     };
 
-    const content = introTexts[dto.scriptType] || `Welcome! Today we're discussing ${dto.topic}.`;
+    const content =
+      (introTexts[dto.scriptType] as string) ||
+      `Welcome! Today we're discussing ${dto.topic}.`;
     const wordCount = this.countWords(content);
     const duration = Math.round((wordCount / readingSpeed) * 60);
 
@@ -142,7 +153,12 @@ export class VoiceScriptWriterService {
     };
   }
 
-  private createContentSection(keyPoint: string, dto: GenerateVoiceScriptDto, index: number, readingSpeed: number): ScriptSectionDto {
+  private createContentSection(
+    keyPoint: string,
+    dto: GenerateVoiceScriptDto,
+    index: number,
+    readingSpeed: number,
+  ): ScriptSectionDto {
     const sectionContent = this.generateSectionContent(keyPoint, dto);
     const wordCount = this.countWords(sectionContent);
     const duration = Math.round((wordCount / readingSpeed) * 60);
@@ -155,12 +171,15 @@ export class VoiceScriptWriterService {
     };
   }
 
-  private createConclusionSection(dto: GenerateVoiceScriptDto, readingSpeed: number): ScriptSectionDto {
+  private createConclusionSection(
+    dto: GenerateVoiceScriptDto,
+    readingSpeed: number,
+  ): ScriptSectionDto {
     const brand = dto.brandName || 'our team';
     const cta = dto.callToAction || 'Thank you for listening!';
-    
+
     const content = `To wrap up, ${dto.topic} offers incredible opportunities for ${dto.audience}. ${cta} From all of us at ${brand}, thanks for your time and attention.`;
-    
+
     const wordCount = this.countWords(content);
     const duration = Math.round((wordCount / readingSpeed) * 60);
 
@@ -172,7 +191,10 @@ export class VoiceScriptWriterService {
     };
   }
 
-  private generateSectionContent(keyPoint: string, dto: GenerateVoiceScriptDto): string {
+  private generateSectionContent(
+    keyPoint: string,
+    dto: GenerateVoiceScriptDto,
+  ): string {
     const templates = [
       `Let's dive into ${keyPoint}. This is particularly important for ${dto.audience} because it directly impacts how you approach your daily challenges.`,
       `Now, when we talk about ${keyPoint}, we need to understand its practical applications. For ${dto.audience}, this means new opportunities to improve and grow.`,
@@ -180,7 +202,7 @@ export class VoiceScriptWriterService {
     ];
 
     const template = templates[Math.floor(Math.random() * templates.length)];
-    
+
     // Add keywords naturally if provided
     if (dto.keywords && dto.keywords.length > 0) {
       const relevantKeywords = dto.keywords.slice(0, 2);
@@ -191,7 +213,7 @@ export class VoiceScriptWriterService {
   }
 
   private getVoiceStyleNotes(style: VoiceStyle, section: string): string {
-    const styleNotes = {
+    const styleNotes: Record<VoiceStyle, Record<string, string>> = {
       [VoiceStyle.CONVERSATIONAL]: {
         introduction: 'Speak warmly as if talking to a friend',
         content: 'Maintain a natural, flowing pace with occasional pauses',
@@ -211,6 +233,26 @@ export class VoiceScriptWriterService {
         introduction: 'Begin with steady, reassuring tone',
         content: 'Speak slowly and deliberately',
         conclusion: 'Close with peaceful, satisfied tone',
+      },
+      [VoiceStyle.CASUAL]: {
+        introduction: 'Start with relaxed, informal tone',
+        content: 'Keep it light and easy-going',
+        conclusion: 'End with friendly, laid-back tone',
+      },
+      [VoiceStyle.AUTHORITATIVE]: {
+        introduction: 'Begin with commanding presence',
+        content: 'Speak with strong conviction and expertise',
+        conclusion: 'Close with definitive authority',
+      },
+      [VoiceStyle.FRIENDLY]: {
+        introduction: 'Start with warm, welcoming tone',
+        content: 'Maintain approachable and kind delivery',
+        conclusion: 'End with sincere friendliness',
+      },
+      [VoiceStyle.DRAMATIC]: {
+        introduction: 'Begin with compelling, theatrical delivery',
+        content: 'Use dynamic emphasis and emotional range',
+        conclusion: 'Close with powerful, memorable impact',
       },
     };
 
@@ -234,13 +276,20 @@ export class VoiceScriptWriterService {
         'Speak slightly faster than normal',
         'Express enthusiasm through voice modulation',
       ],
+      [VoiceStyle.CALM]: [
+        'Speak slowly and deliberately',
+        'Use gentle, soothing tones',
+        'Take longer pauses between sections',
+      ],
     };
 
-    return tips[style] || [
-      'Speak clearly and distinctly',
-      'Maintain steady pacing',
-      'Use appropriate emphasis',
-    ];
+    return (
+      (tips[style] as string[]) || [
+        'Speak clearly and distinctly',
+        'Maintain steady pacing',
+        'Use appropriate emphasis',
+      ]
+    );
   }
 
   private getRecordingNotes(scriptType: ScriptType): string[] {
@@ -262,11 +311,13 @@ export class VoiceScriptWriterService {
       ],
     };
 
-    return notes[scriptType] || [
-      'Use clear articulation',
-      'Maintain consistent audio levels',
-      'Record in sections for easier editing',
-    ];
+    return (
+      (notes[scriptType] as string[]) || [
+        'Use clear articulation',
+        'Maintain consistent audio levels',
+        'Record in sections for easier editing',
+      ]
+    );
   }
 
   private countWords(text: string): number {

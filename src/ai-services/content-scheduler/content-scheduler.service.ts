@@ -1,4 +1,8 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SubscriptionsService } from '../../subscriptions/subscriptions.service';
 import {
@@ -46,7 +50,7 @@ export class ContentSchedulerService {
     // Validate scheduled date
     const scheduledDate = new Date(scheduleDto.scheduledAt);
     const now = new Date();
-    
+
     if (scheduledDate <= now) {
       throw new BadRequestException('Scheduled time must be in the future');
     }
@@ -56,7 +60,7 @@ export class ContentSchedulerService {
       data: {
         userId,
         content: scheduleDto.content,
-        platform: scheduleDto.platform.toUpperCase(),
+        platform: scheduleDto.platform ? scheduleDto.platform.toUpperCase() : '',
         scheduledAt: scheduledDate,
         title: scheduleDto.title || '',
         status: ContentStatus.SCHEDULED,
@@ -74,7 +78,7 @@ export class ContentSchedulerService {
 
     return {
       id: scheduledContent.id,
-      content: scheduledContent.content,
+      content: scheduledContent.content || '',
       platform: scheduledContent.platform as ContentPlatform,
       scheduledAt: scheduledContent.scheduledAt.toISOString(),
       status: scheduledContent.status as ContentStatus,
@@ -109,7 +113,11 @@ export class ContentSchedulerService {
       );
     }
 
-    const whereClause: any = { userId };
+    const whereClause: {
+      userId: string;
+      platform?: string;
+      status?: string;
+    } = { userId };
 
     if (queryDto.platform) {
       whereClause.platform = queryDto.platform.toUpperCase();
@@ -124,9 +132,9 @@ export class ContentSchedulerService {
       orderBy: { scheduledAt: 'asc' },
     });
 
-    return scheduledContents.map(content => ({
+    return scheduledContents.map((content) => ({
       id: content.id,
-      content: content.content,
+      content: content.content || '',
       platform: content.platform as ContentPlatform,
       scheduledAt: content.scheduledAt.toISOString(),
       status: content.status as ContentStatus,
@@ -175,7 +183,7 @@ export class ContentSchedulerService {
     if (updateDto.scheduledAt) {
       const scheduledDate = new Date(updateDto.scheduledAt);
       const now = new Date();
-      
+
       if (scheduledDate <= now) {
         throw new BadRequestException('Scheduled time must be in the future');
       }
@@ -183,8 +191,10 @@ export class ContentSchedulerService {
 
     const updateData: any = {};
     if (updateDto.content) updateData.content = updateDto.content;
-    if (updateDto.platform) updateData.platform = updateDto.platform.toUpperCase();
-    if (updateDto.scheduledAt) updateData.scheduledAt = new Date(updateDto.scheduledAt);
+    if (updateDto.platform)
+      updateData.platform = updateDto.platform.toUpperCase();
+    if (updateDto.scheduledAt)
+      updateData.scheduledAt = new Date(updateDto.scheduledAt);
     if (updateDto.title !== undefined) updateData.title = updateDto.title;
     if (updateDto.status) updateData.status = updateDto.status;
 
@@ -206,7 +216,10 @@ export class ContentSchedulerService {
     };
   }
 
-  async deleteScheduledContent(userId: string, id: string): Promise<{ success: boolean; message: string }> {
+  async deleteScheduledContent(
+    userId: string,
+    id: string,
+  ): Promise<{ success: boolean; message: string }> {
     // Get service from database
     const service = await this.prisma.service.findUnique({
       where: { name: this.serviceName },

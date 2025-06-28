@@ -23,9 +23,7 @@ export class PromptMarketplaceService {
     private subscriptionsService: SubscriptionsService,
   ) {}
 
-  async browsePrompts(
-    browseDto: BrowsePromptsDto,
-  ): Promise<MarketplaceResponseDto> {
+  browsePrompts(browseDto: BrowsePromptsDto): MarketplaceResponseDto {
     const mockPrompts = this.getMockPrompts();
 
     let filtered = mockPrompts;

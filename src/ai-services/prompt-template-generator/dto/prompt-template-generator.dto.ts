@@ -82,7 +82,8 @@ export class GeneratePromptTemplateDto {
 export class PromptTemplateResponseDto {
   @ApiProperty({
     description: 'Generated prompt template',
-    example: 'Create a [TONE] blog post introduction about [TOPIC] for [AUDIENCE]. The introduction should be [LENGTH] and include a compelling hook that...',
+    example:
+      'Create a [TONE] blog post introduction about [TOPIC] for [AUDIENCE]. The introduction should be [LENGTH] and include a compelling hook that...',
   })
   template: string;
 
@@ -94,7 +95,8 @@ export class PromptTemplateResponseDto {
 
   @ApiProperty({
     description: 'Description of what the template does',
-    example: 'Generates compelling blog post introductions that hook readers and encourage continued reading',
+    example:
+      'Generates compelling blog post introductions that hook readers and encourage continued reading',
   })
   description: string;
 
@@ -120,13 +122,15 @@ export class PromptTemplateResponseDto {
 
   @ApiProperty({
     description: 'Usage instructions',
-    example: 'Replace variables with specific values: [TOPIC] with your subject, [TONE] with desired writing style, etc.',
+    example:
+      'Replace variables with specific values: [TOPIC] with your subject, [TONE] with desired writing style, etc.',
   })
   instructions: string;
 
   @ApiProperty({
     description: 'Example output using the template',
-    example: 'Create a professional blog post introduction about artificial intelligence for business executives...',
+    example:
+      'Create a professional blog post introduction about artificial intelligence for business executives...',
   })
   example: string;
 

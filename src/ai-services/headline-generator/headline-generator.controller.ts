@@ -30,7 +30,9 @@ export class HeadlineGeneratorController {
 
   @Post('generate')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Generate compelling headlines for various content types' })
+  @ApiOperation({
+    summary: 'Generate compelling headlines for various content types',
+  })
   @ApiResponse({
     status: 200,
     description: 'Headlines generated successfully',

@@ -32,7 +32,9 @@ export class PromptTemplateGeneratorController {
 
   @Post('generate')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Generate custom prompt templates for AI interactions' })
+  @ApiOperation({
+    summary: 'Generate custom prompt templates for AI interactions',
+  })
   @ApiResponse({
     status: 200,
     description: 'Prompt template generated successfully',

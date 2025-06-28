@@ -38,7 +38,7 @@ export class LoginDto {
 
 export class AuthResponseDto {
   @ApiProperty({ description: 'JWT access token' })
-  access_token: string;
+  accessToken: string;
 
   @ApiProperty({ description: 'User information' })
   user: {
@@ -46,4 +46,14 @@ export class AuthResponseDto {
     name: string;
     email: string;
   };
+}
+
+export class RefreshResponseDto {
+  @ApiProperty({ description: 'New JWT access token' })
+  accessToken: string;
+}
+
+export class LogoutResponseDto {
+  @ApiProperty({ description: 'Logout confirmation message' })
+  message: string;
 }

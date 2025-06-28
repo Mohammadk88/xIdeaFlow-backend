@@ -1,13 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { SeederService } from './seeder/seeder.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
+  // Enable cookie parser for refresh tokens
+  app.use(cookieParser());
+
+  // Enable CORS with credentials
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
@@ -28,6 +32,11 @@ async function bootstrap() {
     .setDescription('AI-powered content generation platform backend API')
     .setVersion('1.0')
     .addBearerAuth()
+    .addCookieAuth('refresh_token', {
+      type: 'http',
+      in: 'cookie',
+      scheme: 'bearer',
+    })
     .addTag('Authentication', 'User authentication and authorization')
     .addTag('Services', 'AI services management')
     .addTag('Credits', 'Credit system and payments')

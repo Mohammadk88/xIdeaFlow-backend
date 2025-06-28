@@ -83,10 +83,12 @@ export class HeadlineGeneratorService {
     };
   }
 
-  private generateMockHeadlines(dto: GenerateHeadlineDto): Omit<HeadlineResponseDto, 'creditsUsed' | 'success' | 'message'> {
+  private generateMockHeadlines(
+    dto: GenerateHeadlineDto,
+  ): Omit<HeadlineResponseDto, 'creditsUsed' | 'success' | 'message'> {
     const variations = this.createHeadlineVariations(dto);
-    const recommended = variations.reduce((best, current) => 
-      current.score > best.score ? current : best
+    const recommended = variations.reduce((best, current) =>
+      current.score > best.score ? current : best,
     );
 
     return {
@@ -95,16 +97,19 @@ export class HeadlineGeneratorService {
       variations,
       recommended,
       optimizationTips: this.getOptimizationTips(dto.type),
-      testingSuggestions: this.getTestingSuggestions(dto.style),
+      testingSuggestions: this.getTestingSuggestions(),
     };
   }
 
-  private createHeadlineVariations(dto: GenerateHeadlineDto): HeadlineVariationDto[] {
+  private createHeadlineVariations(
+    dto: GenerateHeadlineDto,
+  ): HeadlineVariationDto[] {
     const variations: HeadlineVariationDto[] = [];
     const templates = this.getHeadlineTemplates(dto.style);
-    const characterLimit = dto.characterLimit || this.getDefaultCharacterLimit(dto.type);
+    const characterLimit =
+      dto.characterLimit || this.getDefaultCharacterLimit(dto.type);
 
-    templates.forEach((template, index) => {
+    templates.forEach((template) => {
       const headline = this.populateTemplate(template, dto);
       if (headline.length <= characterLimit) {
         variations.push({
@@ -146,7 +151,7 @@ export class HeadlineGeneratorService {
         'Incredible [TOPIC] Success Stories',
       ],
       [HeadlineStyle.URGENT]: [
-        'Don\'t Miss: [TOPIC] is Changing Everything',
+        "Don't Miss: [TOPIC] is Changing Everything",
         'Act Now: [TOPIC] Opportunity for [AUDIENCE]',
         'Limited Time: [TOPIC] Breakthrough',
         'Breaking: [TOPIC] Revolution in [INDUSTRY]',
@@ -176,15 +181,21 @@ export class HeadlineGeneratorService {
 
   private populateTemplate(template: string, dto: GenerateHeadlineDto): string {
     let headline = template;
-    
+
     // Replace placeholders
     headline = headline.replace(/\[TOPIC\]/g, dto.topic);
     headline = headline.replace(/\[AUDIENCE\]/g, dto.audience);
-    headline = headline.replace(/\[INDUSTRY\]/g, dto.industry || 'your industry');
-    
+    headline = headline.replace(
+      /\[INDUSTRY\]/g,
+      dto.industry || 'your industry',
+    );
+
     // Add numbers for list-style headlines
-    headline = headline.replace(/\[NUMBER\]/g, this.getRandomNumber().toString());
-    
+    headline = headline.replace(
+      /\[NUMBER\]/g,
+      this.getRandomNumber().toString(),
+    );
+
     // Add benefits if available
     if (dto.keyPoints && dto.keyPoints.length > 0) {
       headline = headline.replace(/\[BENEFIT\]/g, dto.keyPoints[0]);
@@ -195,10 +206,10 @@ export class HeadlineGeneratorService {
       headline = headline.replace(/\[OUTCOME\]/g, 'performance');
       headline = headline.replace(/\[RESULT\]/g, 'success');
     }
-    
+
     // Add time frame
     headline = headline.replace(/\[TIME_FRAME\]/g, '30 days');
-    
+
     return this.capitalizeWords(headline);
   }
 
@@ -209,35 +220,43 @@ export class HeadlineGeneratorService {
 
   private calculateScore(headline: string, dto: GenerateHeadlineDto): number {
     let score = 5; // Base score
-    
+
     // Length optimization
     if (headline.length >= 30 && headline.length <= 60) score += 1;
     if (headline.length > 60 && headline.length <= 90) score += 0.5;
-    
+
     // Keyword inclusion
     if (dto.keywords) {
-      const keywordCount = dto.keywords.filter(keyword => 
-        headline.toLowerCase().includes(keyword.toLowerCase())
+      const keywordCount = dto.keywords.filter((keyword) =>
+        headline.toLowerCase().includes(keyword.toLowerCase()),
       ).length;
       score += keywordCount * 0.5;
     }
-    
+
     // Power words detection
-    const powerWords = ['amazing', 'incredible', 'breakthrough', 'revolutionary', 'secret', 'proven'];
-    const powerWordCount = powerWords.filter(word => 
-      headline.toLowerCase().includes(word)
+    const powerWords = [
+      'amazing',
+      'incredible',
+      'breakthrough',
+      'revolutionary',
+      'secret',
+      'proven',
+    ];
+    const powerWordCount = powerWords.filter((word) =>
+      headline.toLowerCase().includes(word),
     ).length;
     score += powerWordCount * 0.3;
-    
+
     // Numbers boost
     if (/\d/.test(headline)) score += 0.5;
-    
+
     return Math.min(score, 10); // Cap at 10
   }
 
   private generateReasoning(template: string, style: HeadlineStyle): string {
     const reasons = {
-      [HeadlineStyle.QUESTION]: 'Questions engage curiosity and encourage clicks',
+      [HeadlineStyle.QUESTION]:
+        'Questions engage curiosity and encourage clicks',
       [HeadlineStyle.HOW_TO]: 'How-to headlines promise practical value',
       [HeadlineStyle.LIST]: 'Numbered lists provide clear expectations',
       [HeadlineStyle.EMOTIONAL]: 'Emotional appeal drives engagement',
@@ -266,7 +285,7 @@ export class HeadlineGeneratorService {
   }
 
   private getOptimizationTips(type: HeadlineType): string[] {
-    const tips = {
+    const tips: Record<HeadlineType, string[]> = {
       [HeadlineType.BLOG_POST]: [
         'Include keywords early',
         'Keep under 60 characters for SEO',
@@ -285,17 +304,42 @@ export class HeadlineGeneratorService {
         'Keep platform-specific limits in mind',
         'Include visual elements description',
       ],
+      [HeadlineType.NEWS_ARTICLE]: [
+        'Be clear and specific',
+        'Use action words',
+        'Appeal to target audience',
+        'Test multiple variations',
+      ],
+      [HeadlineType.AD_HEADLINE]: [
+        'Be clear and specific',
+        'Use action words',
+        'Appeal to target audience',
+        'Test multiple variations',
+      ],
+      [HeadlineType.PRESS_RELEASE]: [
+        'Be clear and specific',
+        'Use action words',
+        'Appeal to target audience',
+        'Test multiple variations',
+      ],
+      [HeadlineType.LANDING_PAGE]: [
+        'Be clear and specific',
+        'Use action words',
+        'Appeal to target audience',
+        'Test multiple variations',
+      ],
+      [HeadlineType.PRODUCT_LAUNCH]: [
+        'Be clear and specific',
+        'Use action words',
+        'Appeal to target audience',
+        'Test multiple variations',
+      ],
     };
 
-    return tips[type] || [
-      'Be clear and specific',
-      'Use action words',
-      'Appeal to target audience',
-      'Test multiple variations',
-    ];
+    return tips[type];
   }
 
-  private getTestingSuggestions(style: HeadlineStyle): string[] {
+  private getTestingSuggestions(): string[] {
     return [
       'Test emotional vs rational appeal',
       'Try different numbers in lists',
@@ -306,6 +350,6 @@ export class HeadlineGeneratorService {
   }
 
   private capitalizeWords(str: string): string {
-    return str.replace(/\b\w/g, l => l.toUpperCase());
+    return str.replace(/\b\w/g, (l) => l.toUpperCase());
   }
 }

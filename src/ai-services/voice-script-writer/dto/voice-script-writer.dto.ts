@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsArray, IsNumber, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  IsNumber,
+  Min,
+  Max,
+} from 'class-validator';
 
 export enum ScriptType {
   PODCAST = 'podcast',
@@ -136,7 +144,8 @@ export class ScriptSectionDto {
 
   @ApiProperty({
     description: 'Script content for this section',
-    example: 'Welcome to our AI basics series. Today, we\'ll explore how artificial intelligence is transforming the way we work and live.',
+    example:
+      "Welcome to our AI basics series. Today, we'll explore how artificial intelligence is transforming the way we work and live.",
   })
   content: string;
 
@@ -175,7 +184,8 @@ export class VoiceScriptResponseDto {
 
   @ApiProperty({
     description: 'Full script as continuous text',
-    example: 'Welcome to our AI basics series. Today, we\'ll explore how artificial intelligence is transforming...',
+    example:
+      "Welcome to our AI basics series. Today, we'll explore how artificial intelligence is transforming...",
   })
   fullScript: string;
 
@@ -193,13 +203,21 @@ export class VoiceScriptResponseDto {
 
   @ApiProperty({
     description: 'Voice direction and delivery tips',
-    example: ['Pause after key points', 'Emphasize benefits', 'End with confident tone'],
+    example: [
+      'Pause after key points',
+      'Emphasize benefits',
+      'End with confident tone',
+    ],
   })
   deliveryTips: string[];
 
   @ApiProperty({
     description: 'Technical notes for recording',
-    example: ['Use clear pronunciation', 'Maintain consistent pace', 'Include 2-second pauses between sections'],
+    example: [
+      'Use clear pronunciation',
+      'Maintain consistent pace',
+      'Include 2-second pauses between sections',
+    ],
   })
   recordingNotes: string[];
 

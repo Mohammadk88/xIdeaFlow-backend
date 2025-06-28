@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsArray, IsNumber, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  IsNumber,
+  Min,
+  Max,
+} from 'class-validator';
 
 export enum HeadlineType {
   BLOG_POST = 'blog_post',
@@ -56,7 +64,11 @@ export class GenerateHeadlineDto {
 
   @ApiProperty({
     description: 'Key benefits or selling points',
-    example: ['improved patient outcomes', 'cost reduction', 'faster diagnosis'],
+    example: [
+      'improved patient outcomes',
+      'cost reduction',
+      'faster diagnosis',
+    ],
     required: false,
   })
   @IsOptional()
@@ -108,7 +120,8 @@ export class GenerateHeadlineDto {
 export class HeadlineVariationDto {
   @ApiProperty({
     description: 'Generated headline',
-    example: 'How AI is Revolutionizing Healthcare: 5 Game-Changing Applications',
+    example:
+      'How AI is Revolutionizing Healthcare: 5 Game-Changing Applications',
   })
   headline: string;
 
@@ -159,13 +172,21 @@ export class HeadlineResponseDto {
 
   @ApiProperty({
     description: 'Tips for headline optimization',
-    example: ['Include numbers for credibility', 'Use power words', 'Keep under 60 characters for SEO'],
+    example: [
+      'Include numbers for credibility',
+      'Use power words',
+      'Keep under 60 characters for SEO',
+    ],
   })
   optimizationTips: string[];
 
   @ApiProperty({
     description: 'A/B testing suggestions',
-    example: ['Test emotional vs rational appeal', 'Try different numbers', 'Experiment with question format'],
+    example: [
+      'Test emotional vs rational appeal',
+      'Try different numbers',
+      'Experiment with question format',
+    ],
   })
   testingSuggestions: string[];
 
